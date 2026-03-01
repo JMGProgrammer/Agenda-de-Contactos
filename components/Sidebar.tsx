@@ -84,7 +84,7 @@ export default function Sidebar({
               className="text-white font-bold text-base leading-none"
               style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
             >
-              Agenda Pro
+              Agenda M
             </h1>
             <p className="text-slate-500 text-xs mt-0.5">
               {totalContactos} contactos

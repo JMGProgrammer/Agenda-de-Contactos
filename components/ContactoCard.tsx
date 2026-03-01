@@ -6,12 +6,12 @@ import { Contacto } from "@/hooks/useContactos";
 interface Props {
   contacto: Contacto;
   vistaGrid: boolean;
+  onVerDetalle: (c: Contacto) => void;
   onEdit: (c: Contacto) => void;
   onDelete: (id: string) => void;
   onToggleFavorito: (id: string) => void;
 }
 
-// Genera un color de fondo para el avatar según el nombre
 function getAvatarColor(name: string): string {
   const colors = [
     "bg-blue-600",
@@ -68,29 +68,31 @@ function Avatar({
 export default function ContactoCard({
   contacto,
   vistaGrid,
+  onVerDetalle,
   onEdit,
   onDelete,
   onToggleFavorito,
 }: Props) {
   if (vistaGrid) {
     return (
-      <div className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-0.5">
-        {/* Header */}
+      <div
+        onClick={() => onVerDetalle(contacto)}
+        className="group bg-slate-900 border border-slate-800 hover:border-blue-600/50 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 hover:shadow-xl hover:shadow-blue-900/10 hover:-translate-y-0.5 cursor-pointer"
+      >
         <div className="flex items-start justify-between">
           <Avatar contacto={contacto} size="md" />
           <button
-            onClick={() => onToggleFavorito(contacto.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorito(contacto.id);
+            }}
             className="transition-transform hover:scale-110 active:scale-95"
             title={
               contacto.favorito ? "Quitar de favoritos" : "Agregar a favoritos"
             }
           >
             <svg
-              className={`w-5 h-5 transition-colors ${
-                contacto.favorito
-                  ? "text-amber-400 fill-amber-400"
-                  : "text-slate-600 hover:text-amber-400"
-              }`}
+              className={`w-5 h-5 transition-colors ${contacto.favorito ? "text-amber-400 fill-amber-400" : "text-slate-600 hover:text-amber-400"}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -105,7 +107,6 @@ export default function ContactoCard({
           </button>
         </div>
 
-        {/* Info */}
         <div>
           <h3 className="font-semibold text-white text-base leading-tight">
             {contacto.nombre} {contacto.apellido}
@@ -120,7 +121,6 @@ export default function ContactoCard({
           )}
         </div>
 
-        {/* Grupos */}
         {contacto.grupos.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {contacto.grupos.slice(0, 3).map((g) => (
@@ -139,16 +139,22 @@ export default function ContactoCard({
           </div>
         )}
 
-        {/* Actions */}
+        {/* Actions — detienen la propagación para no abrir el detalle */}
         <div className="flex gap-2 mt-auto pt-2 border-t border-slate-800">
           <button
-            onClick={() => onEdit(contacto)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(contacto);
+            }}
             className="flex-1 text-xs py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors font-medium"
           >
             Editar
           </button>
           <button
-            onClick={() => onDelete(contacto.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(contacto.id);
+            }}
             className="flex-1 text-xs py-2 rounded-lg bg-slate-800 hover:bg-red-900/50 hover:text-red-400 text-slate-400 transition-colors font-medium"
           >
             Eliminar
@@ -160,7 +166,10 @@ export default function ContactoCard({
 
   // VISTA LISTA
   return (
-    <div className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-5 py-4 flex items-center gap-4 transition-all duration-200 hover:shadow-lg hover:shadow-black/20">
+    <div
+      onClick={() => onVerDetalle(contacto)}
+      className="group bg-slate-900 border border-slate-800 hover:border-blue-600/50 rounded-xl px-5 py-4 flex items-center gap-4 transition-all duration-200 hover:shadow-lg hover:shadow-blue-900/10 cursor-pointer"
+    >
       <Avatar contacto={contacto} size="sm" />
 
       <div className="flex-1 min-w-0">
@@ -191,7 +200,6 @@ export default function ContactoCard({
         </div>
       </div>
 
-      {/* Grupos en lista */}
       <div className="hidden md:flex items-center gap-1.5 shrink-0">
         {contacto.grupos.slice(0, 2).map((g) => (
           <span
@@ -203,12 +211,13 @@ export default function ContactoCard({
         ))}
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
-          onClick={() => onToggleFavorito(contacto.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorito(contacto.id);
+          }}
           className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
-          title="Toggle favorito"
         >
           <svg
             className={`w-4 h-4 transition-colors ${contacto.favorito ? "text-amber-400 fill-amber-400" : "text-slate-500"}`}
@@ -225,7 +234,10 @@ export default function ContactoCard({
           </svg>
         </button>
         <button
-          onClick={() => onEdit(contacto)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(contacto);
+          }}
           className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
         >
           <svg
@@ -243,7 +255,10 @@ export default function ContactoCard({
           </svg>
         </button>
         <button
-          onClick={() => onDelete(contacto.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(contacto.id);
+          }}
           className="p-2 rounded-lg hover:bg-red-900/40 text-slate-400 hover:text-red-400 transition-colors"
         >
           <svg

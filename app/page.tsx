@@ -8,6 +8,7 @@ import { useContactos, Contacto, ContactoInput } from "@/hooks/useContactos";
 import Sidebar from "@/components/Sidebar";
 import ContactoCard from "@/components/ContactoCard";
 import ModalContacto from "@/components/ModalContacto";
+import ContactoDetalle from "@/components/ContactoDetalle";
 
 export default function HomePage() {
   const { session, loading, logout } = useAuth();
@@ -16,6 +17,7 @@ export default function HomePage() {
   const [contactoEditando, setContactoEditando] = useState<Contacto | null>(
     null,
   );
+  const [contactoDetalle, setContactoDetalle] = useState<Contacto | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const {
@@ -36,11 +38,8 @@ export default function HomePage() {
     toggleFavorito,
   } = useContactos(session?.userId);
 
-  // Protección de ruta
   useEffect(() => {
-    if (!loading && !session) {
-      router.push("/login");
-    }
+    if (!loading && !session) router.push("/login");
   }, [session, loading, router]);
 
   if (loading || !session) {
@@ -61,24 +60,28 @@ export default function HomePage() {
   }
 
   function handleEdit(c: Contacto) {
+    setContactoDetalle(null);
     setContactoEditando(c);
     setModalOpen(true);
   }
 
   function handleDelete(id: string) {
+    setContactoDetalle(null);
     setConfirmDelete(id);
   }
 
-  function confirmDeleteAction() {
-    if (confirmDelete) {
-      eliminar(confirmDelete);
-      setConfirmDelete(null);
+  // Cuando se toglea favorito desde el detalle, actualiza también el contacto visible en el modal
+  function handleToggleFavoritoDetalle(id: string) {
+    toggleFavorito(id);
+    if (contactoDetalle?.id === id) {
+      setContactoDetalle((prev) =>
+        prev ? { ...prev, favorito: !prev.favorito } : prev,
+      );
     }
   }
 
   return (
     <div className="flex min-h-screen bg-slate-950">
-      {/* Sidebar */}
       <Sidebar
         grupos={grupos}
         grupoActivo={grupoActivo}
@@ -88,12 +91,10 @@ export default function HomePage() {
         onLogout={logout}
       />
 
-      {/* Main content */}
       <main className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
         {/* Header */}
         <header className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-10 px-6 py-4">
           <div className="flex items-center gap-4">
-            {/* Search */}
             <div className="relative flex-1 max-w-md">
               <svg
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
@@ -137,13 +138,10 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Controls */}
             <div className="flex items-center gap-2 ml-auto">
-              {/* Orden */}
               <button
                 onClick={() => setOrden(orden === "az" ? "za" : "az")}
                 className="flex items-center gap-1.5 px-3 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-slate-300 text-sm transition-colors font-medium"
-                title={`Ordenar ${orden === "az" ? "Z→A" : "A→Z"}`}
               >
                 <svg
                   className="w-4 h-4"
@@ -161,7 +159,6 @@ export default function HomePage() {
                 {orden === "az" ? "A→Z" : "Z→A"}
               </button>
 
-              {/* Vista toggle */}
               <button
                 onClick={toggleVista}
                 className="p-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-slate-300 transition-colors"
@@ -198,13 +195,12 @@ export default function HomePage() {
                 )}
               </button>
 
-              {/* Nuevo contacto */}
               <button
                 onClick={() => {
                   setContactoEditando(null);
                   setModalOpen(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30 active:scale-[0.98]"
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]"
               >
                 <svg
                   className="w-4 h-4"
@@ -227,8 +223,7 @@ export default function HomePage() {
 
         {/* Content */}
         <div className="flex-1 px-6 py-6">
-          {/* Section title */}
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-5">
             <h2 className="text-slate-300 text-sm font-medium">
               {grupoActivo === "todos"
                 ? "Todos los contactos"
@@ -239,7 +234,6 @@ export default function HomePage() {
             </h2>
           </div>
 
-          {/* Empty state */}
           {contactos.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mb-4">
@@ -270,7 +264,6 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Grid / List */}
           {contactos.length > 0 && (
             <div
               className={
@@ -284,6 +277,7 @@ export default function HomePage() {
                   key={c.id}
                   contacto={c}
                   vistaGrid={vistaGrid}
+                  onVerDetalle={setContactoDetalle}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   onToggleFavorito={toggleFavorito}
@@ -294,7 +288,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Modal */}
+      {/* Modal crear/editar */}
       {modalOpen && (
         <ModalContacto
           contacto={contactoEditando}
@@ -306,7 +300,18 @@ export default function HomePage() {
         />
       )}
 
-      {/* Confirm Delete Dialog */}
+      {/* Modal detalle */}
+      {contactoDetalle && (
+        <ContactoDetalle
+          contacto={contactoDetalle}
+          onClose={() => setContactoDetalle(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleFavorito={handleToggleFavoritoDetalle}
+        />
+      )}
+
+      {/* Confirm Delete */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -343,7 +348,10 @@ export default function HomePage() {
                 Cancelar
               </button>
               <button
-                onClick={confirmDeleteAction}
+                onClick={() => {
+                  eliminar(confirmDelete);
+                  setConfirmDelete(null);
+                }}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold transition-colors text-sm"
               >
                 Eliminar

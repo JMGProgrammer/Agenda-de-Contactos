@@ -4,7 +4,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Agenda Pro",
+  title: "Agenda M - Tu agenda",
   description: "Tu agenda de contactos personal",
 };
 
