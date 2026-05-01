@@ -88,6 +88,7 @@ export default function HomePage() {
         setGrupoActivo={setGrupoActivo}
         totalContactos={totalContactos}
         userName={session.name}
+        userPhoto={session.photo}
         onLogout={logout}
       />
 
